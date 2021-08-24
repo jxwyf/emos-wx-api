@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 描述:
+ * 描述: 通用返回结果
  */
 public class R extends HashMap<String, Object> {
 
