@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
  * 描述: 实现认证授权
  */
 @Component
-public class Outh2Realm extends AuthorizingRealm {
+public class OAuth2Realm extends AuthorizingRealm {
 
 
     @Autowired

@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * 描述:拦截器
+ * 普通的bean
  */
 @Component
 @Scope("prototype")
@@ -130,6 +131,7 @@ public class OAuth2Filter extends AuthenticatingFilter {
     }
 
     //shiro 在执行relam方法时候判断有没有登录或者登录失败
+    //认证失败会执行下面的方法
     @Override
     protected boolean onLoginFailure(AuthenticationToken token, AuthenticationException e, ServletRequest request, ServletResponse response) {
         //数据类型转换
@@ -144,6 +146,7 @@ public class OAuth2Filter extends AuthenticatingFilter {
         //设置响应状态码
         resp.setStatus(HttpStatus.SC_UNAUTHORIZED);
         try {
+            //认证失败的具体消息
             resp.getWriter().print(e.getMessage());
         } catch (IOException ioException) {
             ioException.printStackTrace();
@@ -152,6 +155,9 @@ public class OAuth2Filter extends AuthenticatingFilter {
         return false;
     }
 
+    /*
+     *
+     */
     @Override
     public void doFilterInternal(ServletRequest request, ServletResponse response, FilterChain chain) throws ServletException, IOException {
         super.doFilterInternal(request, response, chain);
