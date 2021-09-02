@@ -1,10 +1,11 @@
-package com.lhalj.emos.api.service;
+package com.lhalj.emos.api.service.impl;
 
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.lhalj.emos.api.db.dao.TbUserDao;
 import com.lhalj.emos.api.exception.EmosException;
+import com.lhalj.emos.api.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,7 +22,7 @@ import java.util.Set;
 @Service
 @Slf4j
 @Scope("prototype")
-public class UserServiceImpl implements UserService{
+public class UserServiceImpl implements UserService {
 
     @Value("${wx.app-id}")
     private String appId;

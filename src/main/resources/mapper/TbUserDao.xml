@@ -4,7 +4,7 @@
   <select id="haveRootUser" resultType="boolean">
     select if(count(*),TRUE,FALSE) from tb_user where root = 1
   </select>
-  
+
   <insert id="insert" parameterType="HashMap">
     insert into tb_user
     set
@@ -44,8 +44,8 @@
   <select id="searchIdByOpenId" parameterType="String" resultType="Integer">
     select id from tb_user where open_id = #{openId} and status = 1
   </select>
-  
-  <select id="searchUserPermissions" parameterType="int" resultType="String">
+
+  <select id="searchUserPermissions" parameterType="Integer" resultType="String">
     SELECT p.permission_name from tb_user u
         join tb_role r on json_contains(u.role,cast(r.id as char))
         join tb_permission p on json_contains(r.permissions,cast(p.id as char))
