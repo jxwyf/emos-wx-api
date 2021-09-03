@@ -7,6 +7,7 @@ import java.io.IOException;
 
 /**
  * 描述:XSS过滤器
+ * 1 首先被执行
  */
 @WebFilter(urlPatterns = "/*")
 public class XssFilter implements Filter {

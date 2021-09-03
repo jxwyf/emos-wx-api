@@ -25,7 +25,8 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 描述:拦截器
+ * 描述:SpringMVC过滤器
+ * 2 第二
  * 普通的bean
  */
 @Component

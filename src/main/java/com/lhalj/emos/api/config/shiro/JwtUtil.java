@@ -30,7 +30,7 @@ public class JwtUtil {
     private int expire;
 
     //生成TOKEN
-    public String createToken(int userId){
+    public  String createToken(int userId){
         //获取5天后的日期
         Date date = DateUtil.offset(new Date(), DateField.DAY_OF_YEAR, 5);
         //生成密钥 加密算法 对密钥进行加密 把密钥封装成加密算法

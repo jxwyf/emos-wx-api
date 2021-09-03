@@ -2,6 +2,7 @@ package com.lhalj.emos.api.controller;
 
 import com.lhalj.emos.api.common.utils.R;
 import com.lhalj.emos.api.config.shiro.JwtUtil;
+import com.lhalj.emos.api.controller.from.LoginForm;
 import com.lhalj.emos.api.controller.from.RegisterForm;
 import com.lhalj.emos.api.service.UserService;
 import io.swagger.annotations.Api;
@@ -50,6 +51,18 @@ public class UserController {
         saveChcheToken(token,id);
 
         return R.ok("用户注册成功").put("token",token).put("permission",permsSet);
+    }
+
+    //登录
+    @PostMapping("/login")
+    @ApiOperation("用户登录")
+    public R login(@Valid @RequestBody LoginForm form){
+        int id = userService.login(form.getCode());
+        String token = jwtUtil.createToken(id);
+        Set<String> permsSet = userService.searchUserPermissions(id);
+        saveChcheToken(token,id);
+
+        return R.ok("登录成功").put("token",token).put("permission",permsSet);
     }
 
 
