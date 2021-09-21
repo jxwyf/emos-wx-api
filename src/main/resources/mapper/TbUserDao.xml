@@ -51,4 +51,9 @@
         join tb_permission p on json_contains(r.permissions,cast(p.id as char))
     where u.id = #{userId} and u.status = 1;
   </select>
+  
+  <select id="searchById" parameterType="int" resultType="com.lhalj.emos.api.db.pojo.TbUser">
+    select id,open_id,nickname,photo,name,sex,tel,role,root,dept_id,status,create_time
+    from tb_user where id = #{userId} and status=1;
+  </select>
 </mapper>

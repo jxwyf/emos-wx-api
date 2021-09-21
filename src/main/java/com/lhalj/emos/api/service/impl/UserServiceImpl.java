@@ -4,6 +4,7 @@ import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.lhalj.emos.api.db.dao.TbUserDao;
+import com.lhalj.emos.api.db.pojo.TbUser;
 import com.lhalj.emos.api.exception.EmosException;
 import com.lhalj.emos.api.service.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -93,5 +94,11 @@ public class UserServiceImpl implements UserService {
         }
         //TODO 从消息队列中接收
         return id;
+    }
+
+    @Override
+    public TbUser searchById(int userId) {
+        TbUser user = userDao.searchById(userId);
+        return user;
     }
 }
