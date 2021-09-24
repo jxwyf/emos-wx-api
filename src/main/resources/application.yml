@@ -66,6 +66,9 @@ emos:
     secret: 123456
     expire: 5
     cache-expire: 10
+  face:
+    createFaceModelUrl: https://baidu.com
+    checkinUrl: https://baidu.com
 
 wx:
   app-id: wxbaf14d69bb021196
