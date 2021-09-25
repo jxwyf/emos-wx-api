@@ -36,6 +36,11 @@ spring:
         max-wait: -1ms
         max-idle: 16
         min-idle: 8
+  mail:
+    default-encoding: UTF-8
+    host: smtp.163.com
+    username: javago520@163.com
+    password: 123456a
 data:
   mongodb:
     host: localhost
@@ -69,6 +74,9 @@ emos:
   face:
     createFaceModelUrl: https://baidu.com
     checkinUrl: https://baidu.com
+  email:
+    system: javago520@163.com
+    hr: 2578831517@qq.com
 
 wx:
   app-id: wxbaf14d69bb021196

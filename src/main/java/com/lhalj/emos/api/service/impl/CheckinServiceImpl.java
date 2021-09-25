@@ -3,24 +3,29 @@ package com.lhalj.emos.api.service.impl;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
 import cn.hutool.http.HttpUtil;
 import com.lhalj.emos.api.config.SystemConstants;
-import com.lhalj.emos.api.db.dao.TbCheckinDao;
-import com.lhalj.emos.api.db.dao.TbFaceModelDao;
-import com.lhalj.emos.api.db.dao.TbHolidaysDao;
-import com.lhalj.emos.api.db.dao.TbWorkdayDao;
+import com.lhalj.emos.api.db.dao.*;
 import com.lhalj.emos.api.db.pojo.TbCheckin;
 import com.lhalj.emos.api.exception.EmosException;
 import com.lhalj.emos.api.service.CheckinService;
+import com.lhalj.emos.api.task.EmailTask;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateUtils;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
 
+import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
@@ -55,6 +60,18 @@ public class CheckinServiceImpl implements CheckinService {
 
     @Value("${emos.face.checkinUrl}")
     private String checkinUrl;
+
+    @Autowired
+    private TbCityDao cityDao;
+
+    @Value("${emos.email.hr}")
+    private String hrEmail;
+
+    @Autowired
+    private EmailTask emailTask;
+
+    @Autowired
+    private TbUserDao userDao;
 
 
 
@@ -143,8 +160,65 @@ public class CheckinServiceImpl implements CheckinService {
         else if("True".equals(body)){
 
         }
-        //TODO 查询疫情风险等级
-        //TODO 保存签到记录
+        // 查询疫情风险等级
+        int risk = 1;//低风险
+        //查询城市简称
+        String city = (String) param.get("city");
+        String district = (String) param.get("district");
+
+        String address = (String) param.get("address");
+        String country = (String) param.get("country");
+        String province = (String) param.get("province");
+
+        if(!StrUtil.isBlank(city)&&!StrUtil.isBlank(district)){
+            String code = cityDao.searchCode(city);
+            //查询地区风险
+            try{
+                String url = "http://m." + code + ".bendibao.com/news/yqdengji/?qu=" + district;
+                Document document = Jsoup.connect(url).get();
+                //解析html
+                Elements elements = document.getElementsByClass("list-content");
+                if(elements.size()>0){
+                    Element element = elements.get(0);
+                    String result = element.select("p:last-child").text();
+
+                    if ("高风险".equals(result)) {
+                        risk = 3;
+                        // 发送告警邮件
+                        HashMap<String, String> map = userDao.searchNameAndDept(userId);
+                        String name = map.get("name");
+                        String deptNmae = map.get("dept_name");
+                        deptNmae = deptNmae !=null ?deptNmae : " ";
+                        //邮件封装对象
+                        SimpleMailMessage message = new SimpleMailMessage();
+                        message.setTo(hrEmail);
+                        message.setSubject("员工" + name +"身处高风险疫情地区警告");
+                        message.setText(deptNmae + "员工" + name + "," + DateUtil.format(new Date(),"yyyy年MM月dd日") + "处于" + address +",属于疫情高风险地区 请及时和员工联系 核实情况");
+                    }else if("中风险".equals(result)){
+                        risk = 2;
+                    }
+
+                }
+            }catch (Exception e){
+                throw new EmosException("获取风险等级失败");
+            }
+
+        }
+        //保存签到记录
+
+
+        TbCheckin entity = new TbCheckin();
+        entity.setUserId(userId);
+        entity.setAddress(address);
+        entity.setCountry(country);
+        entity.setCity(city);
+        entity.setProvince(province);
+        entity.setDistrict(district);
+        entity.setStatus((byte) status);
+        entity.setDate(DateUtil.today());
+        entity.setCreateTime(d1);
+
+        checkinDao.insert(entity);
 
     }
 }
