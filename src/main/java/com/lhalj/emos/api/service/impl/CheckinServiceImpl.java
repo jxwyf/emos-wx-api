@@ -10,6 +10,7 @@ import cn.hutool.http.HttpUtil;
 import com.lhalj.emos.api.config.SystemConstants;
 import com.lhalj.emos.api.db.dao.*;
 import com.lhalj.emos.api.db.pojo.TbCheckin;
+import com.lhalj.emos.api.db.pojo.TbFaceModel;
 import com.lhalj.emos.api.exception.EmosException;
 import com.lhalj.emos.api.service.CheckinService;
 import com.lhalj.emos.api.task.EmailTask;
@@ -147,7 +148,7 @@ public class CheckinServiceImpl implements CheckinService {
         HttpRequest request = HttpUtil.createPost(checkinUrl);
         request.form("photo", FileUtil.file(path),"targetModel",faceModel);
         HttpResponse response = request.execute();
-        if (response.getStatus()!=200) {
+        if (response.getStatus()==200) {
             throw new EmosException("人脸识别服务异常");
         }
         String body = response.body();
@@ -181,7 +182,6 @@ public class CheckinServiceImpl implements CheckinService {
                 if(elements.size()>0){
                     Element element = elements.get(0);
                     String result = element.select("p:last-child").text();
-
                     if ("高风险".equals(result)) {
                         risk = 3;
                         // 发送告警邮件
@@ -194,6 +194,7 @@ public class CheckinServiceImpl implements CheckinService {
                         message.setTo(hrEmail);
                         message.setSubject("员工" + name +"身处高风险疫情地区警告");
                         message.setText(deptNmae + "员工" + name + "," + DateUtil.format(new Date(),"yyyy年MM月dd日") + "处于" + address +",属于疫情高风险地区 请及时和员工联系 核实情况");
+                        emailTask.sendAsync(message);
                     }else if("中风险".equals(result)){
                         risk = 2;
                     }
@@ -206,6 +207,14 @@ public class CheckinServiceImpl implements CheckinService {
         }
         //保存签到记录
 
+        // 发送告警邮件
+        HashMap<String, String> map = userDao.searchNameAndDept(userId);
+        //邮件封装对象
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(hrEmail);
+        message.setSubject("员工" + "刘温情" +"身处高风险疫情地区警告");
+        message.setText("开发部" + "员工" + "刘温情" + "," + DateUtil.format(new Date(),"yyyy年MM月dd日") + "处于" + address +",属于疫情高风险地区 请及时和员工联系 核实情况");
+        emailTask.sendAsync(message);
 
         TbCheckin entity = new TbCheckin();
         entity.setUserId(userId);
@@ -219,6 +228,24 @@ public class CheckinServiceImpl implements CheckinService {
         entity.setCreateTime(d1);
 
         checkinDao.insert(entity);
+
+    }
+
+    @Override
+    public void createFaceModel(int userId, String path) {
+        HttpRequest request = HttpUtil.createPost(createFaceModelUrl);
+        request.form("photo",FileUtil.file(path));
+
+        HttpResponse response = request.execute();
+        String body = response.body();
+
+        if("无法识别出人脸".equals(body) || "照片中存在多张人脸".equals(body)){
+            throw new EmosException(body);
+        }
+        TbFaceModel entity = new TbFaceModel();
+        entity.setUserId(userId);
+        entity.setFaceModel(userId+"");
+        faceModelDao.insert(entity);
 
     }
 }

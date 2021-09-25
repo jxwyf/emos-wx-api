@@ -1,14 +1,26 @@
 package com.lhalj.emos.api.controller;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.io.FileUtil;
 import com.lhalj.emos.api.common.utils.R;
 import com.lhalj.emos.api.config.shiro.JwtUtil;
+import com.lhalj.emos.api.controller.from.CheckinForm;
+import com.lhalj.emos.api.exception.EmosException;
 import com.lhalj.emos.api.service.CheckinService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.validation.Valid;
+import java.awt.font.MultipleMaster;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Locale;
 
 /**
  * 描述:签到
@@ -25,12 +37,79 @@ public class CheckinController {
     @Autowired
     private CheckinService checkinService;
 
+    @Value("${emos.image-folder}")
+    private String imageFolder;
+
     @GetMapping("/validCanCheckIn")
     @ApiOperation("查看用户今天是否可以签到")
-    public R validCanCheckIn(@RequestHeader("tokne") String token){
+    public R validCanCheckIn(@RequestHeader("token") String token){
         int userId = jwtUtil.getUserId(token);
         String result = checkinService.validCanCheckIn(userId, DateUtil.today());
         return R.ok(result);
     }
+
+    @PostMapping("/checkin")
+    @ApiOperation("签到")
+    public R checkin(@Valid CheckinForm form,
+                     @RequestParam("photo") MultipartFile file,
+                     @RequestHeader("token") String token){
+
+        if(file==null){
+            return R.error("没有上传文件");
+        }
+
+        int userId = jwtUtil.getUserId(token);
+        String fileName = file.getOriginalFilename().toLowerCase();
+
+        if (!fileName.endsWith(".jpg")) {
+            return R.error("必须提交JPG格式图片");
+        }else {
+            String path = imageFolder + "/" +fileName;
+            try{
+                //保存图片
+                file.transferTo(Paths.get(path));
+                HashMap param=new HashMap();
+                param.put("userId",userId);
+                param.put("path",path);
+                param.put("city",form.getCity());
+                param.put("district",form.getDistrict());
+                param.put("address",form.getAddress());
+                param.put("country",form.getCountry());
+                param.put("province",form.getProvince());
+                checkinService.checkin(param);
+                return R.ok("签到成功");
+            }catch (IOException e){
+                throw new EmosException("图片保存错误");
+            }finally {
+                //删除图片
+                FileUtil.del(path);
+            }
+        }
+    }
+
+    @PostMapping("/createFaceModel")
+    @ApiOperation("创建人脸模型")
+    public R createFaceModel(@RequestParam("photo") MultipartFile file,@RequestHeader("token")String token){
+        int userId = jwtUtil.getUserId(token);
+
+        if (file==null) {
+            return R.error("没有上传文件");
+        }
+        String fileName = file.getOriginalFilename().toLowerCase();
+        String path = imageFolder + "/" +fileName;
+        if (!fileName.endsWith(".jpg")) {
+            return R.error("必须提交JPG格式图片");
+        }else {
+            try {
+                file.transferTo(Paths.get(path));
+                checkinService.createFaceModel(userId,path);
+                return R.ok("人脸建模成功");
+            }catch (IOException e){
+
+            }
+            return R.ok("人脸建模成功");
+        }
+    }
+
 
 }

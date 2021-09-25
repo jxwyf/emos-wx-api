@@ -8,4 +8,7 @@ public interface CheckinService {
 
     //保存签到记录
     void checkin(HashMap param);
+
+    //保存人脸数据
+    void createFaceModel(int userId,String path);
 }
