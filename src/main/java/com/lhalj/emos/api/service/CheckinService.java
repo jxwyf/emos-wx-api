@@ -1,5 +1,6 @@
 package com.lhalj.emos.api.service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public interface CheckinService {
@@ -11,4 +12,11 @@ public interface CheckinService {
 
     //保存人脸数据
     void createFaceModel(int userId,String path);
+
+
+    HashMap searchTodayCheckin(int userId);
+
+    long searchCheckinDays(int userId);
+
+    ArrayList<HashMap> searchWeekCheckin(HashMap param);
 }

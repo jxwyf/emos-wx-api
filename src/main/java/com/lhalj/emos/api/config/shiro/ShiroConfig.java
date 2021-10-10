@@ -45,6 +45,8 @@ public class ShiroConfig {
         map.put("oauth2",filter);
         shiroFilter.setFilters(map);
 
+
+
         //需要拦截的请求
         Map<String, String> filterMap = new LinkedHashMap<>();
         filterMap.put("/webjars/**","anon");
