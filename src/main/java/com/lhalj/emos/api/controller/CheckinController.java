@@ -1,12 +1,15 @@
 package com.lhalj.emos.api.controller;
 
+import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
 import com.lhalj.emos.api.common.utils.R;
+import com.lhalj.emos.api.config.SystemConstants;
 import com.lhalj.emos.api.config.shiro.JwtUtil;
 import com.lhalj.emos.api.controller.from.CheckinForm;
 import com.lhalj.emos.api.exception.EmosException;
 import com.lhalj.emos.api.service.CheckinService;
+import com.lhalj.emos.api.service.UserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +22,7 @@ import javax.validation.Valid;
 import java.awt.font.MultipleMaster;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 
@@ -39,6 +43,12 @@ public class CheckinController {
 
     @Value("${emos.image-folder}")
     private String imageFolder;
+
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private SystemConstants constants;
 
     @GetMapping("/validCanCheckIn")
     @ApiOperation("查看用户今天是否可以签到")
@@ -109,6 +119,37 @@ public class CheckinController {
             }
             return R.ok("人脸建模成功");
         }
+    }
+
+    @GetMapping("/searchTodayCheckin")
+    @ApiOperation("查询用户当日签到数据")
+    private HashMap searchTodayCheckin(@RequestHeader("token")String token){
+        int userId = jwtUtil.getUserId(token);
+
+        HashMap map = checkinService.searchTodayCheckin(userId);
+        //考勤开始时间
+        map.put("attendanceTime",constants.attendanceTime);
+        map.put("closingTime",constants.closingTime);
+        //查询员工签到总天数
+        long days = checkinService.searchCheckinDays(userId);
+        map.put("checkinDays",days);
+
+        //判断日期是否在用户入职之前
+        DateTime hiredate = DateUtil.parse(userService.searchUserHiredate(userId));
+        DateTime startDate = DateUtil.beginOfWeek(DateUtil.date());
+        if(startDate.isBefore(hiredate)){
+            startDate = hiredate;
+        }
+
+        DateTime endDate = DateUtil.endOfWeek(DateUtil.date());
+        HashMap param = new HashMap();
+        param.put("startDate",startDate.toString());
+        param.put("endDate",endDate.toString());
+        param.put("userId",userId);
+
+        ArrayList<HashMap> list = checkinService.searchWeekCheckin(param);
+        map.put("weekCheckin",list);
+        return R.ok().put("result",map);
     }
 
 

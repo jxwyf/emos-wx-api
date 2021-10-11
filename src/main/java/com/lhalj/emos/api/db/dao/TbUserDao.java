@@ -27,6 +27,9 @@ public interface TbUserDao {
     //查询员工姓名和部门名称
     HashMap searchNameAndDept(int userId);
 
+    //查询员工入职日期
+    String searchUserHiredate(int userId);
+
 
 
 }
