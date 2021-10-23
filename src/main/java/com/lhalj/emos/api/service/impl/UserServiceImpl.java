@@ -1,12 +1,15 @@
 package com.lhalj.emos.api.service.impl;
 
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.lhalj.emos.api.db.dao.TbUserDao;
+import com.lhalj.emos.api.db.pojo.MessageEntity;
 import com.lhalj.emos.api.db.pojo.TbUser;
 import com.lhalj.emos.api.exception.EmosException;
 import com.lhalj.emos.api.service.UserService;
+import com.lhalj.emos.api.task.MessageTask;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,6 +36,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private TbUserDao userDao;
+
+    @Autowired
+    private MessageTask messageTask;
 
     private String getOpenId(String code){
         String url = "https://api.weixin.qq.com/sns/jscode2session";
@@ -67,8 +73,17 @@ public class UserServiceImpl implements UserService {
                 param.put("createTime",new Date());
                 param.put("root",true);
                 userDao.insert(param);
-                Integer integer = userDao.searchIdByOpenId(openId);
-                return  integer;
+                Integer id = userDao.searchIdByOpenId(openId);
+
+                MessageEntity entity = new MessageEntity();
+                entity.setSenderId(0);
+                entity.setSenderName("系统信息");
+                entity.setUuid(IdUtil.simpleUUID());
+                entity.setMsg("欢迎你注册成为超级管理员 请及时更新你的员工个人信息");
+                entity.setSendTime(new Date());
+                messageTask.sendAsync(id+"",entity);
+
+                return  id;
             }else {
                 throw new EmosException("无法绑定超级管理员账号");
             }
@@ -93,6 +108,7 @@ public class UserServiceImpl implements UserService {
             throw new EmosException("账号不存在");
         }
         //TODO 从消息队列中接收
+        messageTask.receiveAsync(id+"");
         return id;
     }
 
@@ -106,5 +122,11 @@ public class UserServiceImpl implements UserService {
     public String searchUserHiredate(int userId) {
         String hiredate = userDao.searchUserHiredate(userId);
         return hiredate;
+    }
+
+    @Override
+    public HashMap searchUserSummary(int userId) {
+        HashMap map = userDao.searchUserSummary(userId);
+        return map;
     }
 }

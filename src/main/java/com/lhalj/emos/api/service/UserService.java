@@ -2,6 +2,7 @@ package com.lhalj.emos.api.service;
 
 import com.lhalj.emos.api.db.pojo.TbUser;
 
+import java.util.HashMap;
 import java.util.Set;
 
 public interface UserService {
@@ -16,4 +17,6 @@ public interface UserService {
     TbUser searchById(int userId);
 
     String searchUserHiredate(int userId);
+
+    HashMap searchUserSummary(int userId);
 }

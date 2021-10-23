@@ -44,7 +44,7 @@
 
 <!--  本周考勤情况-->
   <select id="searchWeekCheckin" parameterType="HashMap" resultType="HashMap">
-    select cast(ck.date as cach) as date, if(ck.status=1,'正常','迟到') as status
+    select cast(ck.date as char) as date, if(ck.status=1,'正常','迟到') as status
     from tb_checkin ck where user_id = #{userId} and ck.date between #{startDate} and #{endDate}
   </select>
 </mapper>

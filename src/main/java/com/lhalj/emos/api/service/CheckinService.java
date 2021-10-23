@@ -20,5 +20,7 @@ public interface CheckinService {
 
     ArrayList<HashMap> searchWeekCheckin(HashMap param);
 
+    //查询月考勤
+    ArrayList<HashMap> searchMonthCheckin(HashMap param);
 
 }

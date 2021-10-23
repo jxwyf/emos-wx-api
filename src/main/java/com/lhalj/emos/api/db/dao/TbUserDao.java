@@ -30,6 +30,9 @@ public interface TbUserDao {
     //查询员工入职日期
     String searchUserHiredate(int userId);
 
+    //查询用户信息
+    HashMap searchUserSummary(int userId);
+
 
 
 }

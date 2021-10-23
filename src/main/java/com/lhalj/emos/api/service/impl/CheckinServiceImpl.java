@@ -221,6 +221,7 @@ public class CheckinServiceImpl implements CheckinService {
 
         TbCheckin entity = new TbCheckin();
         entity.setUserId(userId);
+        entity.setRisk(risk);
         entity.setAddress(address);
         entity.setCountry(country);
         entity.setCity(city);
@@ -304,6 +305,7 @@ public class CheckinServiceImpl implements CheckinService {
                 }
                 //当天考勤结束时间
                 DateTime endTime = DateUtil.parse(DateUtil.today() + " " + systemConstants.attendanceEndTime);
+                System.out.println();
                 String today = DateUtil.today();
                 //
                 if(date.equals(today)&&DateUtil.date().isBefore(endTime)&&flag==false){
@@ -320,5 +322,10 @@ public class CheckinServiceImpl implements CheckinService {
         });
 
         return list;
+    }
+
+    @Override
+    public ArrayList<HashMap> searchMonthCheckin(HashMap param) {
+        return this.searchWeekCheckin(param);
     }
 }

@@ -10,12 +10,10 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.HashMap;
 import java.util.Set;
 
 /**
@@ -59,10 +57,19 @@ public class UserController {
     public R login(@Valid @RequestBody LoginForm form){
         int id = userService.login(form.getCode());
         String token = jwtUtil.createToken(id);
+        //查询权限
         Set<String> permsSet = userService.searchUserPermissions(id);
         saveChcheToken(token,id);
 
         return R.ok("登录成功").put("token",token).put("permission",permsSet);
+    }
+
+    @GetMapping("/searchUserSummary")
+    @ApiOperation("查询用户信息")
+    public R searchUserSummary(@RequestHeader("token")String token){
+        int userId = jwtUtil.getUserId(token);
+        HashMap map = userService.searchUserSummary(userId);
+        return R.ok().put("result",map);
     }
 
 
