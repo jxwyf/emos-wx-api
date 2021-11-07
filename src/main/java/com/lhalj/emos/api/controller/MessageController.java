@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -44,8 +45,8 @@ public class MessageController {
         int length = form.getLength();
         long start = (page - 1) * length;
 
-        List<HashMap> list = messageService.searchMessageByPage(userId, start, length);
-        return R.ok().put("result",list);
+        List list =  messageService.searchMessageByPage(userId, start, length);
+        return R.ok().put("result", list);
     }
 
     @PostMapping("/searchMessageById")

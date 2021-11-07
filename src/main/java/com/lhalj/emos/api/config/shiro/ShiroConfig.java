@@ -59,6 +59,8 @@ public class ShiroConfig {
         filterMap.put("/swagger-resources/**","anon");
         filterMap.put("/captcha.jpg","anon");
         filterMap.put("/user/register","anon");
+        //TODO
+//        filterMap.put("/meeting/searchMyMeetingListByPage1","anon");
         filterMap.put("/user/login","anon");
         filterMap.put("/test/**","anon");
         //调用上面的拦截方法

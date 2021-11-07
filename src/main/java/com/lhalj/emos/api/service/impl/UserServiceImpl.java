@@ -4,6 +4,7 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import com.lhalj.emos.api.db.dao.TbDeptDao;
 import com.lhalj.emos.api.db.dao.TbUserDao;
 import com.lhalj.emos.api.db.pojo.MessageEntity;
 import com.lhalj.emos.api.db.pojo.TbUser;
@@ -16,9 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Set;
+import java.util.*;
 
 /**
  * 描述:
@@ -36,6 +35,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private TbUserDao userDao;
+
+    @Autowired
+    private TbDeptDao tbDeptDao;
 
     @Autowired
     private MessageTask messageTask;
@@ -128,5 +130,35 @@ public class UserServiceImpl implements UserService {
     public HashMap searchUserSummary(int userId) {
         HashMap map = userDao.searchUserSummary(userId);
         return map;
+    }
+
+
+
+    @Override
+    public ArrayList<HashMap> searchUserGroupByDept(String keyword) {
+        //部门数据
+        ArrayList<HashMap> list_1 = tbDeptDao.searchDeptMembers(keyword);
+        //员工数据
+        ArrayList<HashMap> list_2 = userDao.searchUserGroupByDept(keyword);
+
+        for (HashMap map_1:list_1){
+            long deptId = (long) map_1.get("id");
+            ArrayList members = new ArrayList();
+            for (HashMap map_2:list_2) {
+                long id = (long) map_2.get("deptId");
+                //员工id和部门id 相等 加入部门
+                if(deptId == id){
+                    members.add(map_2);
+                }
+            }
+            map_1.put("members",members);
+        }
+        return list_1;
+    }
+
+    @Override
+    public ArrayList<HashMap> searchMembers(List param) {
+        ArrayList<HashMap> list = userDao.searchMembers(param);
+        return list;
     }
 }

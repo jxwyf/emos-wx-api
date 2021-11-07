@@ -69,4 +69,63 @@
     select u.name,u.photo,d.dept_name as deptName from tb_user u left join tb_dept d on u.dept_id = d.id
     where u.id=#{userId} and u.status = 1
   </select>
+
+  <select id="searchUserGroupByDept" parameterType="String" resultType="HashMap">
+    select d.id as deptId,d.dept_name as deptName,u.id as userId,u.name
+    from tb_dept d join tb_user u ON u.dept_id = d.id and u.status = 1
+    <if test="keyword!=null">
+      where u.name like '%${keyword}%'
+    </if>
+    group by d.id,u.id
+  </select>
+
+  <select id="searchMembers" parameterType="list" resultType="HashMap">
+    select id,name,photo from tb_user
+    where status = 1 and id in
+    <foreach collection="list" item="one" separator="," open="(" close=")">
+      #{one}
+    </foreach>
+  </select>
+
+  <select id="searchUserInfo" parameterType="int" resultType="HashMap">
+    select u.open_id as openId,
+           u.nickname,
+           u.name,
+           u.photo,
+           u.sex,
+           u.tel,
+           u.email,
+           d.dept_name as dept,
+           u.hiredate,
+           case u.status
+                when 1 then "在职"
+                when 2 then "离职"
+                end as status,
+                (select group_concat(role_name separator ",") from tb_role where json_contains
+                (u.role,convert (id,char ))) as roles
+                from tb_user u left join tb_dept d on u.dept_id = d.id
+                where u.id = 15 and u.status = 1
+                
+  </select>
+  
+  <select id="searchDeptManagerId" parameterType="int" resultType="int">
+    select u2.id
+    from tb_user u1 join tb_user u2 on u1.dept_id = u2.dept_id
+    join tb_role r on json_contains(u2.role,cast(r.id as char ))
+    where u1.id=#{id} and r.id = 2 and u1.status = 1 and u2.status = 1
+  </select>
+
+  <select id="searchGmId" resultType="int">
+    select u.id
+    from tb_user u
+    join tb_role r on json_contains(u.role,cast (r.id as char ))
+    where r.id = 1 and u.status = 1
+  </select>
+  
+  <select id="searchMeetingMembersInSameDept" parameterType="String" resultType="boolean">
+    select if(count (distinct u.dept_id)=1,true,FALSE ) as bool
+    from tb_meeting m
+    join tb_user u on json_contains(m.members,cast (u.id as char ))
+    where m.uuid = #{uuid} and u.status = 1
+  </select>
 </mapper>
